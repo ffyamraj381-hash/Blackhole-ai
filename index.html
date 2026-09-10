@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BlackHole AI</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#000000;
+    --panel:#0E0A1A;
+    --panel-2:#171025;
+    --violet:#8A5CF6;
+    --violet-dim:#4C2F99;
+    --ember:#FF9A56;
+    --paper:#EFEAF7;
+    --text-soft:#9C93B5;
+    --danger:#E4634C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--void);
+    color:var(--paper);
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  header{
+    padding:16px 18px 12px;
+    border-bottom:1px solid rgba(138,92,246,0.15);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-shrink:0;
+  }
+  .mark{width:34px;height:34px;flex-shrink:0;}
+  .mark svg{display:block;width:100%;height:100%;}
+  .brand-name{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;letter-spacing:0.2px;
+  }
+  .brand-tag{font-size:11px;color:var(--text-soft);margin-top:1px;}
+  .settings-btn{
+    margin-left:auto;
+    width:36px;height:36px;
+    border-radius:10px;
+    border:1px solid rgba(138,92,246,0.25);
+    background:transparent;
+    color:var(--text-soft);
+    font-size:16px;
+    cursor:pointer;
+  }
+  #messages{
+    flex:1;
+    overflow-y:auto;
+    padding:20px 16px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .empty-state{
+    margin:auto;
+    text-align:center;
+    max-width:290px;
+    color:var(--text-soft);
+  }
+  .empty-state .mark{width:56px;height:56px;margin:0 auto 16px;}
+  .empty-state h2{
+    font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:19px;color:var(--paper);margin-bottom:8px;
+  }
+  .empty-state p{font-size:14px;line-height:1.6;}
+  .msg{
+    max-width:85%;
+    padding:11px 14px;
+    border-radius:14px;
+    font-size:15px;
+    line-height:1.55;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+  }
+  .msg.user{
+    align-self:flex-end;
+    background:var(--violet);
+    color:#0A0612;
+    border-bottom-right-radius:4px;
+  }
+  .msg.bot{
+    align-self:flex-start;
+    background:var(--panel-2);
+    color:var(--paper);
+    border-bottom-left-radius:4px;
+    border:1px solid rgba(138,92,246,0.12);
+  }
+  .msg.error{
+    align-self:center;
+    background:rgba(228,99,76,0.12);
+    color:#F4B3A5;
+    font-size:13px;
+    border:1px solid rgba(228,99,76,0.3);
+  }
+  .sources-box{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid rgba(138,92,246,0.15);
+  }
+  .sources-box .label{
+    font-size:11px;color:var(--text-soft);margin-bottom:6px;letter-spacing:0.3px;
+  }
+  .source-link{
+    display:block;
+    font-size:12px;
+    color:var(--ember);
+    text-decoration:none;
+    margin-bottom:4px;
+  }
+  .research-tag{
+    display:inline-block;
+    font-size:10px;
+    background:rgba(138,92,246,0.18);
+    color:var(--violet);
+    padding:2px 8px;
+    border-radius:6px;
+    margin-bottom:8px;
+  }
+  .typing{
+    align-self:flex-start;
+    display:flex;
+    gap:5px;
+    padding:14px;
+    background:var(--panel-2);
+    border-radius:14px;
+    border-bottom-left-radius:4px;
+  }
+  .typing span{
+    width:6px;height:6px;border-radius:50%;background:var(--text-soft);
+    animation:blink 1.2s infinite;
+  }
+  .typing span:nth-child(2){animation-delay:0.2s;}
+  .typing span:nth-child(3){animation-delay:0.4s;}
+  @keyframes blink{0%,80%,100%{opacity:0.3;}40%{opacity:1;}}
+  .code-block{margin:8px 0;border-radius:10px;overflow:hidden;border:1px solid rgba(138,92,246,0.2);}
+  .code-header{display:flex;justify-content:space-between;align-items:center;background:#050308;padding:6px 12px;font-size:11px;color:var(--text-soft);}
+  .copy-btn{background:none;border:1px solid rgba(138,92,246,0.25);color:var(--text-soft);font-size:11px;padding:3px 9px;border-radius:6px;cursor:pointer;}
+  .code-block pre{margin:0;padding:12px;overflow-x:auto;background:#030205;}
+  .code-block code{font-family:'Courier New',monospace;font-size:13px;line-height:1.5;color:#D9CFF2;white-space:pre;}
+  footer{
+    flex-shrink:0;
+    padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid rgba(138,92,246,0.15);
+    background:var(--void);
+  }
+  .mode-row{display:flex;gap:8px;margin-bottom:10px;}
+  .mode-btn{
+    flex:1;padding:8px 10px;border-radius:10px;border:1px solid rgba(138,92,246,0.2);
+    background:transparent;color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;
+  }
+  .mode-btn.active{background:var(--violet);color:#0A0612;border-color:var(--violet);}
+  .input-row{display:flex;gap:10px;align-items:flex-end;}
+  #userInput{
+    flex:1;resize:none;max-height:110px;
+    background:var(--panel);border:1px solid rgba(138,92,246,0.25);
+    border-radius:12px;padding:11px 14px;color:var(--paper);
+    font-family:'Inter',sans-serif;font-size:15px;line-height:1.4;
+  }
+  #userInput:focus{outline:none;border-color:var(--violet);}
+  #userInput::placeholder{color:var(--text-soft);}
+  #sendBtn{
+    width:44px;height:44px;border-radius:12px;border:none;
+    background:var(--violet);color:#0A0612;font-size:18px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;
+  }
+  #sendBtn:disabled{opacity:0.5;}
+  #sendBtn:active{transform:scale(0.96);}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.75);
+    display:flex;align-items:center;justify-content:center;
+    z-index:50;padding:20px;
+  }
+  .modal{
+    background:var(--panel);border:1px solid rgba(138,92,246,0.3);
+    border-radius:16px;padding:22px;max-width:340px;width:100%;
+  }
+  .modal h3{font-family:'Space Grotesk',sans-serif;font-size:18px;margin-bottom:10px;}
+  .modal p{font-size:13px;color:var(--text-soft);line-height:1.6;margin-bottom:14px;}
+  .modal a{color:var(--ember);}
+  .modal input{
+    width:100%;padding:10px 12px;border-radius:10px;
+    background:var(--void);border:1px solid rgba(138,92,246,0.3);
+    color:var(--paper);font-size:14px;margin-bottom:12px;
+  }
+  .modal input:focus{outline:none;border-color:var(--violet);}
+  .modal-error{font-size:12px;color:var(--danger);margin-bottom:10px;display:none;}
+  .modal button.save{
+    width:100%;padding:11px;border-radius:10px;border:none;
+    background:var(--violet);color:#0A0612;font-weight:600;font-size:14px;cursor:pointer;
+  }
+  .modal button.close-link{
+    width:100%;text-align:center;background:none;border:none;color:var(--text-soft);
+    font-size:12px;margin-top:10px;cursor:pointer;
+  }
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mark">
+    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="d1" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FFB37A"/>
+          <stop offset="35%" stop-color="#C05FE0"/>
+          <stop offset="70%" stop-color="#5B2ECF"/>
+          <stop offset="100%" stop-color="#1A0B3D"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="256" cy="256" rx="200" ry="52" fill="none" stroke="url(#d1)" stroke-width="26"/>
+      <circle cx="256" cy="256" r="86" fill="#000"/>
+    </svg>
+  </div>
+  <div>
+    <div class="brand-name">BlackHole AI</div>
+    <div class="brand-tag">Deep research &middot; truthful answers</div>
+  </div>
+  <button class="settings-btn" id="settingsBtn" aria-label="Settings">&#9881;</button>
+</header>
+
+<div id="messages">
+  <div class="empty-state" id="emptyState">
+    <div class="mark">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="d2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFB37A"/>
+            <stop offset="35%" stop-color="#C05FE0"/>
+            <stop offset="70%" stop-color="#5B2ECF"/>
+            <stop offset="100%" stop-color="#1A0B3D"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="256" cy="256" rx="200" ry="52" fill="none" stroke="url(#d2)" stroke-width="26"/>
+        <circle cx="256" cy="256" r="86" fill="#000"/>
+      </svg>
+    </div>
+    <h2>BlackHole AI mein swagat hai</h2>
+    <p>Chat mode mein kuch bhi pucho, ya Deep Research on karke Reddit + web se sach nikalwao.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="mode-row">
+    <button class="mode-btn active" id="chatModeBtn">Chat</button>
+    <button class="mode-btn" id="researchModeBtn">Deep Research</button>
+  </div>
+  <div class="input-row">
+    <textarea id="userInput" rows="1" placeholder="Apna sawaal likho..."></textarea>
+    <button id="sendBtn" aria-label="Send">&#10148;</button>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="keyModal">
+  <div class="modal">
+    <h3>Apni API key daalo</h3>
+    <p>BlackHole AI chalane ke liye ek free Anthropic API key chahiye — ye sirf tumhare phone mein save hogi, kahin aur nahi jayegi. Key <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> se milegi.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
+    <div class="modal-error" id="keyError">Sahi key daalo (sk-ant- se shuru honi chahiye)</div>
+    <button class="save" id="saveKeyBtn">Save aur shuru karo</button>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const emptyState = document.getElementById('emptyState');
+const chatModeBtn = document.getElementById('chatModeBtn');
+const researchModeBtn = document.getElementById('researchModeBtn');
+const keyModal = document.getElementById('keyModal');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const saveKeyBtn = document.getElementById('saveKeyBtn');
+const keyError = document.getElementById('keyError');
+const settingsBtn = document.getElementById('settingsBtn');
+
+let history = [];
+let mode = 'chat';
+
+function getApiKey() {
+  return localStorage.getItem('blackhole_api_key') || '';
+}
+
+function showKeyModal() {
+  apiKeyInput.value = getApiKey();
+  keyError.style.display = 'none';
+  keyModal.classList.remove('hidden');
+}
+
+if (!getApiKey()) {
+  showKeyModal();
+} else {
+  keyModal.classList.add('hidden');
+}
+
+settingsBtn.addEventListener('click', showKeyModal);
+
+saveKeyBtn.addEventListener('click', () => {
+  const key = apiKeyInput.value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    keyError.style.display = 'block';
+    return;
+  }
+  localStorage.setItem('blackhole_api_key', key);
+  keyModal.classList.add('hidden');
+});
+
+chatModeBtn.addEventListener('click', () => setMode('chat'));
+researchModeBtn.addEventListener('click', () => setMode('research'));
+
+function setMode(m) {
+  mode = m;
+  chatModeBtn.classList.toggle('active', m === 'chat');
+  researchModeBtn.classList.toggle('active', m === 'research');
+  inputEl.placeholder = m === 'chat' ? 'Apna sawaal likho...' : 'Kis topic pe deep research chahiye?';
+}
+
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
+});
+
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+sendBtn.addEventListener('click', sendMessage);
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+let codeBlockCounter = 0;
+
+function renderWithCodeBlocks(text) {
+  const parts = text.split(/```(\w*)\n?([\s\S]*?)```/g);
+  const container = document.createElement('div');
+  for (let i = 0; i < parts.length; i += 3) {
+    const plain = parts[i];
+    if (plain) {
+      const p = document.createElement('div');
+      p.style.whiteSpace = 'pre-wrap';
+      p.textContent = plain.replace(/^\n+|\n+$/g, '');
+      if (p.textContent) container.appendChild(p);
+    }
+    const lang = parts[i + 1];
+    const code = parts[i + 2];
+    if (code !== undefined) {
+      codeBlockCounter++;
+      const id = 'code-' + codeBlockCounter;
+      const block = document.createElement('div');
+      block.className = 'code-block';
+      block.innerHTML =
+        '<div class="code-header"><span>' + (lang || 'code') + '</span>' +
+        '<button class="copy-btn" data-target="' + id + '">Copy</button></div>' +
+        '<pre><code id="' + id + '">' + escapeHtml(code.replace(/\n$/, '')) + '</code></pre>';
+      container.appendChild(block);
+    }
+  }
+  return container;
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('copy-btn')) {
+    const codeEl = document.getElementById(e.target.dataset.target);
+    if (codeEl) {
+      navigator.clipboard.writeText(codeEl.textContent).then(() => {
+        const original = e.target.textContent;
+        e.target.textContent = 'Copied';
+        setTimeout(() => { e.target.textContent = original; }, 1500);
+      });
+    }
+  }
+});
+
+function addMessage(text, role, opts) {
+  if (emptyState) emptyState.remove();
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  if (opts && opts.researchTag) {
+    const tag = document.createElement('div');
+    tag.className = 'research-tag';
+    tag.textContent = 'Deep Research';
+    div.appendChild(tag);
+  }
+
+  if (role === 'bot' && text.includes('```')) {
+    div.appendChild(renderWithCodeBlocks(text));
+  } else {
+    const p = document.createElement('div');
+    p.style.whiteSpace = 'pre-wrap';
+    p.textContent = text;
+    div.appendChild(p);
+  }
+
+  if (opts && opts.sources && opts.sources.length) {
+    const box = document.createElement('div');
+    box.className = 'sources-box';
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = 'Sources';
+    box.appendChild(label);
+    opts.sources.forEach((s) => {
+      if (!s.url) return;
+      const a = document.createElement('a');
+      a.className = 'source-link';
+      a.href = s.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = '[' + s.source + '] ' + s.title;
+      box.appendChild(a);
+    });
+    div.appendChild(box);
+  }
+
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+async function callClaude(messages) {
+  const apiKey = getApiKey();
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1200,
+      messages: messages
+    })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || 'AI se jawab nahi mila');
+  }
+  const textBlock = (data.content || []).find(b => b.type === 'text');
+  return textBlock ? textBlock.text : '';
+}
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+
+  if (!getApiKey()) {
+    showKeyModal();
+    return;
+  }
+
+  addMessage(text, 'user');
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  if (mode === 'research') {
+    await runDeepResearch(text);
+    sendBtn.disabled = false;
+    inputEl.focus();
+    return;
+  }
+
+  history.push({ role: 'user', content: text });
+  showTyping();
+
+  try {
+    const reply = await callClaude(history);
+    hideTyping();
+    addMessage(reply, 'bot');
+    history.push({ role: 'assistant', content: reply });
+  } catch (err) {
+    hideTyping();
+    addMessage(err.message.includes('401') || err.message.toLowerCase().includes('key')
+      ? 'API key galat lag rahi hai. Settings mein check karo.'
+      : 'Connection mein dikkat aa rahi hai. Dobara try karo.', 'error');
+  } finally {
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function runDeepResearch(query) {
+  showTyping();
+  try {
+    const researchRes = await fetch('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    const researchData = await researchRes.json();
+    const snippets = researchData.results || [];
+
+    let context = 'Neeche Reddit aur web se live search results hain "' + query + '" ke baare mein:\n\n';
+    snippets.forEach((s, i) => {
+      context += (i + 1) + '. [' + s.source + '] ' + s.title + '\n' + (s.snippet || '') + '\n\n';
+    });
+    context += '\nIn results ka use karke user ke sawaal ka ek sach based, balanced, deep analysis wala jawab do. Agar results mein kuch conflicting ho to wo bhi bताo. Jhooth ya bina source ke apni taraf se cheez mat jodo. Jawab Hinglish mein do jab tak user ne kisi aur bhasha mein na poocha ho.\n\nUser ka sawaal: ' + query;
+
+    const reply = await callClaude([{ role: 'user', content: context }]);
+    hideTyping();
+    addMessage(reply, 'bot', { researchTag: true, sources: snippets });
+  } catch (err) {
+    hideTyping();
+    addMessage('Research karne mein dikkat aa rahi hai. Dobara try karo.', 'error');
+  }
+}
+</script>
+
+</body>
+</html>
